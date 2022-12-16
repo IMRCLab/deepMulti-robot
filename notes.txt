@@ -1,0 +1,2 @@
+file name # Cfs # dataset type and size # epochs # batch size 
+locanet-1 - single Cf, synthetic images and 1k, 25, 5, 

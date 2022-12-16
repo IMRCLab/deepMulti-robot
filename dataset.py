@@ -6,11 +6,15 @@ import config as cfg
 
 class Dataset(object):
 
-    def __init__(self):
-        self.annot_path  = cfg.TRAIN_ANNOT_PATH
-        self.input_size  = cfg.TRAIN_INPUT_SIZE
-        self.batch_size  = cfg.TRAIN_BATCH_SIZE
+    def __init__(self, mode):
+        if mode == 'testing':
+            self.annot_path  = cfg.TEST_PATH         
+            self.batch_size  = 1
+        else:
+            self.annot_path  = cfg.TRAIN_ANNOT_PATH         
+            self.batch_size  = cfg.TRAIN_BATCH_SIZE
 
+        self.input_size  = cfg.TRAIN_INPUT_SIZE
         self.stride = cfg.LOCA_STRIDE
         self.classes = cfg.LOCA_CLASSES
         self.num_classes = len(self.classes)
@@ -58,7 +62,8 @@ class Dataset(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split()
-        image_path = line[0]
+        image_path = cfg.DATASET_FOLDER + line[0]
+
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
         if cfg.INPUT_CHANNEL == 3:
@@ -69,7 +74,8 @@ class Dataset(object):
             image = image[..., np.newaxis]
         image = image.astype('float32')
         image = image/128.0 - 1.0
-        points = np.array([list(map(int, point.split(','))) for point in line[2:3]])
+        points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) # works for MRS case
+
         return image, points
 
     def preprocess_true_points(self, points):
@@ -78,7 +84,7 @@ class Dataset(object):
             # note that label dimension is 320x224, therefore swap axes as follows
             point_xy    = np.array([point[1], point[0]])
             point_depth = point[2]
-            point_class = point[3]
+            point_class = 0
 
             onehot = np.zeros(self.num_classes, dtype=np.float)
             onehot[point_class] = 1.0

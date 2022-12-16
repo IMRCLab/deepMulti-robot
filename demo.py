@@ -5,21 +5,7 @@ from locaNet import locaNet
 from PIL import Image, ImageDraw, ImageFont
 import config as cfg
 import math
-
-def distance(a, b):
-    return math.sqrt(pow((a[0]-b[0]), 2) + pow((a[1]-b[1]), 2))
-def clean_array2d(array, threshold):
-    i = 0
-    while(i<len(array)):
-        j = i+1
-        while(j<len(array)):
-            dist = distance(array[i], array[j])
-            if dist < threshold:
-                array.pop(j)
-            else:
-                j = j+1
-        i = i+1
-    return array
+from utils import *
 
 def image_predict(image_path, model):
     if cfg.INPUT_CHANNEL == 3:
@@ -34,8 +20,8 @@ def image_predict(image_path, model):
     conv = model.predict(image_data)
     conf = tf.sigmoid(conv[0, :, :, 1:2])
     np.set_printoptions(linewidth=np.inf)
-    for i in range(28):
-        print(np.round(np.array(conv[0, i, :, 1]).T))
+    # for i in range(28):
+    #     print(np.round(np.array(conv[0, i, :, 1]).T))
     pos_conf_above_threshold = np.argwhere(conf > 0.33)
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
@@ -46,7 +32,6 @@ def image_predict(image_path, model):
     pos_conf_above_threshold = clean_array2d(list_pos, dist)
 
     for xy in pos_conf_above_threshold:
-        print(xy[0:2])
         curH = (xy[0]-0.5)*8
         curW = (xy[1]+0.5)*8
         draw.ellipse((curW-4, curH-4, curW+4, curH+4), outline ='white', width=2)
@@ -75,19 +60,19 @@ def pred_max_conf(image_path, model):
     # image.show()
     return [(xy[1]+0.5)*8, (xy[0]+0.5)*8, float(d)]
 
-input_size   = [224, 320]
+input_size   = cfg.TRAIN_INPUT_SIZE
 input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], cfg.INPUT_CHANNEL])
 feature_maps = locaNet(input_layer)
 model = tf.keras.Model(input_layer, feature_maps)
 # model.load_weights("./output-real/locaNet")
-model.load_weights("./output-syn-dep-conf/locaNet")
+model.load_weights("./output/locanet-1")
 model.summary()
 
 ## Figure in the paper
-image_predict("./dataset/synImgsMulti/0026.jpg", model)
-image_predict("./dataset/synImgsMulti/0037.jpg", model)
-image_predict("./dataset/synImgsMulti/0047.jpg", model)
-image_predict("./dataset/synImgs/0837.jpg", model) # sample also in AIdeck
+image_predict('/home/akmaral/tubCloud/Shared/cvmrs/training_dataset/synth/single/1000/img_00999.jpg', model)
+# image_predict("./dataset/synImgsMulti/0037.jpg", model)
+# image_predict("./dataset/synImgsMulti/0047.jpg", model)
+# image_predict("./dataset/synImgs/0837.jpg", model) # sample also in AIdeck
 # image_predict("./dataset/synImgs/0970.jpg", model)
 # image_predict("./dataset/aideck-dataset/imageStorage/imagesH2C/img00080.ppm", model)
 
@@ -136,45 +121,45 @@ image_predict("./dataset/synImgs/0837.jpg", model) # sample also in AIdeck
 # plt.show()
 
 # Figure (error w.r.t distance)
-import matplotlib.pyplot as plt
-lineAll = []
-y_err = []
-z_err = []
-d_err = []
-dis = []
-with open('./dataset/synImgs/test.txt', 'r') as file:
-    for row in file:
-        lineAll.append(row.split())
-for line in lineAll:
-    imgPath = line[0]
-    y_p = float(line[2].split(',')[0])
-    z_p = float(line[2].split(',')[1])
-    d   = float(line[2].split(',')[2])/1000.0
-    predict = pred_max_conf(imgPath, model)
-    y_err.append(y_p - predict[0])
-    z_err.append(z_p - predict[1])
-    d_err.append(d   - predict[2])
-    dis.append(d)
-data = np.array((dis, y_err, z_err, d_err))
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-x = data[0, :]
-y = data[1, :]
-ax1.scatter(x, y, c='tab:blue', label='pixError x', alpha=0.3, edgecolors='none')
-y = data[2, :]
-ax1.scatter(x, y, c='tab:orange', label='pixError y', alpha=0.3, edgecolors='none')
-y = data[3, :]
-ax2.scatter(x, y, c='tab:green', label='depthError', alpha=0.3, edgecolors='none')
-ax1.legend()
-ax1.grid(True)
-ax1.set_title('Position error in image', fontsize=12)
-ax1.set_ylabel('Error (Pixels)', fontsize=12)
-ax1.set_xlabel('Distance (m)', fontsize=12)
-ax2.legend()
-ax2.grid(True)
-ax2.set_title('Depth error')
-ax2.set_ylabel('Error (m)', fontsize=12)
-ax2.set_xlabel('Distance (m)', fontsize=12)
-plt.show()
+# import matplotlib.pyplot as plt
+# lineAll = []
+# y_err = []
+# z_err = []
+# d_err = []
+# dis = []
+# with open('./dataset/synImgs/test.txt', 'r') as file:
+#     for row in file:
+#         lineAll.append(row.split())
+# for line in lineAll:
+#     imgPath = line[0]
+#     y_p = float(line[2].split(',')[0])
+#     z_p = float(line[2].split(',')[1])
+#     d   = float(line[2].split(',')[2])/1000.0
+#     predict = pred_max_conf(imgPath, model)
+#     y_err.append(y_p - predict[0])
+#     z_err.append(z_p - predict[1])
+#     d_err.append(d   - predict[2])
+#     dis.append(d)
+# data = np.array((dis, y_err, z_err, d_err))
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+# x = data[0, :]
+# y = data[1, :]
+# ax1.scatter(x, y, c='tab:blue', label='pixError x', alpha=0.3, edgecolors='none')
+# y = data[2, :]
+# ax1.scatter(x, y, c='tab:orange', label='pixError y', alpha=0.3, edgecolors='none')
+# y = data[3, :]
+# ax2.scatter(x, y, c='tab:green', label='depthError', alpha=0.3, edgecolors='none')
+# ax1.legend()
+# ax1.grid(True)
+# ax1.set_title('Position error in image', fontsize=12)
+# ax1.set_ylabel('Error (Pixels)', fontsize=12)
+# ax1.set_xlabel('Distance (m)', fontsize=12)
+# ax2.legend()
+# ax2.grid(True)
+# ax2.set_title('Depth error')
+# ax2.set_ylabel('Error (m)', fontsize=12)
+# ax2.set_xlabel('Distance (m)', fontsize=12)
+# plt.show()
 
 # ## Figure position error
 # from numpy.linalg import inv

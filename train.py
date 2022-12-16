@@ -4,18 +4,20 @@ import tensorflow as tf
 from dataset import Dataset
 from locaNet import locaNet, compute_loss
 import config as cfg
+from time import perf_counter, sleep
+
 
 logdir = "./output/log"
 if os.path.exists(logdir): shutil.rmtree(logdir)
 writer = tf.summary.create_file_writer(logdir)
 
-trainset = Dataset()
+trainset = Dataset('training')
 steps_per_epoch = len(trainset)
 global_steps = tf.Variable(1, trainable=False, dtype=tf.int64)
 warmup_steps = cfg.TRAIN_WARMUP_EPOCHS * steps_per_epoch
 total_steps = cfg.TRAIN_EPOCHS * steps_per_epoch
 
-input_tensor = tf.keras.layers.Input([224, 320, cfg.INPUT_CHANNEL])
+input_tensor = tf.keras.layers.Input([cfg.TRAIN_INPUT_SIZE[0], cfg.TRAIN_INPUT_SIZE[1], cfg.INPUT_CHANNEL])
 conv_tensors = locaNet(input_tensor)
 
 model = tf.keras.Model(input_tensor, conv_tensors)
@@ -54,8 +56,12 @@ def train_step(image_data, target):
             tf.summary.scalar("loss/conf_loss", conf_loss, step=global_steps)
         writer.flush()
 
+start = perf_counter()
 for epoch in range(cfg.TRAIN_EPOCHS):
     for image_data, target in trainset:
         train_step(image_data, target)
-    model.save_weights("./output/locaNet")
-    model.save("./output/loca.h5")
+    model.save_weights("./output/" + cfg.OUTPUT_FILE)
+    model.save("./output/" + cfg.OUTPUT_FILE + ".h5")
+end = perf_counter()
+print('Training finished')
+print("Time taken for {} epochs is: {}".format(cfg.TRAIN_EPOCHS, (end-start)/60.))
