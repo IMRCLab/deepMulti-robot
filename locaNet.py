@@ -1,6 +1,6 @@
 import tensorflow as tf
-import common as common
-import config as cfg
+import deepMulti_robot.common as common
+import deepMulti_robot.config as cfg
 
 def locaNet(input_layer):
     input_data = common.convolutional(input_layer, (3, 3, cfg.INPUT_CHANNEL, 8))    # 224x320x8

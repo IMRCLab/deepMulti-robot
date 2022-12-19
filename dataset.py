@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
-import config as cfg
+import deepMulti_robot.config as cfg
 
 class Dataset(object):
 

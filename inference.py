@@ -3,17 +3,17 @@ import tensorflow as tf
 from munkres import Munkres
 from time import perf_counter
 
-import config as cfg
-from locaNet import  locaNet
-from dataset import Dataset
-from utils import *
+import deepMulti_robot.config as cfg
+from deepMulti_robot.locaNet import  locaNet
+from deepMulti_robot.dataset import Dataset
+from deepMulti_robot.utils import *
 
 def testing_locanet():
     Eucld_err, pr_loca, gt_loca =  [], [], []
     dist = 5
     m = Munkres()
     testset = Dataset('testing')  
-    locanet_weights = '/home/akmaral/IMRS/cv-mrs/baselines/deepMulti-robot/output/' + cfg.OUTPUT_FILE
+    locanet_weights = '/home/akmaral/IMRS/cv-mrs/baselines/deepMulti_robot/output/' + cfg.OUTPUT_FILE
     input_size   = cfg.TRAIN_INPUT_SIZE
     input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], cfg.INPUT_CHANNEL])
 
@@ -24,7 +24,7 @@ def testing_locanet():
     for image_data, target in testset:
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
-        conf_locanet = tf.sigmoid(pred_result_locanet[0, :, :, 1:2]) # BE CAREFULL WITH IT
+        conf_locanet = tf.sigmoid(pred_result_locanet[0, :, :, 1:2]) 
         pos_conf_above_threshold_locanet = np.argwhere(conf_locanet > 0.33)
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
