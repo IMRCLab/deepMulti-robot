@@ -3,10 +3,14 @@ import tensorflow as tf
 from munkres import Munkres
 from time import perf_counter
 
-import deepMulti_robot.config as cfg
-from deepMulti_robot.locaNet import  locaNet
-from deepMulti_robot.dataset import Dataset
-from deepMulti_robot.utils import *
+# import deepMulti_robot.config as cfg
+# from deepMulti_robot.locaNet import  locaNet
+# from deepMulti_robot.dataset import Dataset
+# from deepMulti_robot.utils import *
+import config as cfg
+from locaNet import  locaNet
+from dataset import Dataset
+from utils import *
 
 def testing_locanet():
     Eucld_err, pr_loca, gt_loca =  [], [], []
