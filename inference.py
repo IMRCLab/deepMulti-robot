@@ -17,7 +17,7 @@ def testing_locanet():
     dist = 5
     m = Munkres()
     testset = Dataset('testing')  
-    locanet_weights = '/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/' + cfg.OUTPUT_FILE
+    locanet_weights = cfg.WEIGHT_PATH + cfg.OUTPUT_FILE
     input_size   = cfg.TRAIN_INPUT_SIZE
     input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], cfg.INPUT_CHANNEL])
 

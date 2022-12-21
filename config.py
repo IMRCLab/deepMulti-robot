@@ -12,3 +12,4 @@ TRAIN_LR_END        = 1e-6
 TRAIN_WARMUP_EPOCHS = 2
 TRAIN_EPOCHS        = 25
 OUTPUT_FILE = 'synth-1k'
+WEIGHT_PATH = '/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/'
