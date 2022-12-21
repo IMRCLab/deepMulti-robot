@@ -19,6 +19,7 @@ def testing_locanet():
     model_locanet = tf.keras.Model(input_layer, feature_maps_locanet)
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
+    success, fail = 0, 0
     for image_name, image_data, target in testset:
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -27,6 +28,7 @@ def testing_locanet():
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
         if (len(pos_conf_above_threshold_locanet) != 0):
+            success += 1
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*cfg.LOCA_STRIDE
@@ -42,6 +44,7 @@ def testing_locanet():
         yaml.dump(prediction, outfile)
     end = perf_counter()
     print("Time taken for test is {} min.".format((end-start)/60.))
+    print("Success rate is {} for {} images.".format(success*100/len(testset), len(testset)))
 
 if __name__ == "__main__":
     testing_locanet()
