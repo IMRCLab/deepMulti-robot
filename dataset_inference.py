@@ -2,15 +2,14 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
-# import deepMulti_robot.config as cfg
 import config as cfg
 
-class Dataset(object):
+class Dataset_Test(object):
 
     def __init__(self):
-        self.annot_path  = cfg.TRAIN_ANNOT_PATH         
-        self.batch_size  = cfg.TRAIN_BATCH_SIZE
-
+        
+        self.annot_path  = cfg.TEST_PATH         
+        self.batch_size  = 1
         self.input_size  = cfg.TRAIN_INPUT_SIZE
         self.stride = cfg.LOCA_STRIDE
         self.classes = cfg.LOCA_CLASSES
@@ -26,7 +25,7 @@ class Dataset(object):
         with open(self.annot_path, 'r') as f:
             txt = f.readlines()
             annotations = [line.strip() for line in txt if len(line.strip().split()[1:]) != 0]
-        np.random.shuffle(annotations)
+        # np.random.shuffle(annotations)
         return annotations
 
     def __iter__(self):
@@ -37,6 +36,7 @@ class Dataset(object):
             self.output_size = np.array(self.input_size) // self.stride
             batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
             batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
+            batch_image_name = np.empty(self.batch_size, dtype=object)
 
             num = 0
             if self.batch_count < self.num_batchs:
@@ -44,14 +44,15 @@ class Dataset(object):
                     index = self.batch_count * self.batch_size + num
                     if index >= self.num_samples: index -= self.num_samples
                     annotation = self.annotations[index]
-                    image, points = self.parse_annotation(annotation)
+                    image_name, image, points = self.parse_annotation(annotation)
                     label_point = self.preprocess_true_points(points)
 
                     batch_image[num, :, :, :] = image
                     batch_label[num, :, :, :] = label_point
+                    batch_image_name[num] = image_name
                     num += 1
                 self.batch_count += 1
-                return batch_image, batch_label
+                return batch_image_name, batch_image, batch_label
             else:
                 self.batch_count = 0
                 np.random.shuffle(self.annotations)
@@ -73,7 +74,7 @@ class Dataset(object):
         image = image/128.0 - 1.0
         points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) # works for MRS case
 
-        return image, points
+        return line[0], image, points
 
     def preprocess_true_points(self, points):
         label = np.zeros((self.output_size[0], self.output_size[1], 4+self.num_classes))

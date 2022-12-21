@@ -13,7 +13,7 @@ logdir = cfg.WEIGHT_PATH + "log"
 if os.path.exists(logdir): shutil.rmtree(logdir)
 writer = tf.summary.create_file_writer(logdir)
 
-trainset = Dataset('training')
+trainset = Dataset()
 steps_per_epoch = len(trainset)
 global_steps = tf.Variable(1, trainable=False, dtype=tf.int64)
 warmup_steps = cfg.TRAIN_WARMUP_EPOCHS * steps_per_epoch

@@ -13,3 +13,4 @@ TRAIN_WARMUP_EPOCHS = 2
 TRAIN_EPOCHS        = 25
 OUTPUT_FILE = 'synth-1k'
 WEIGHT_PATH = '/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/'
+INFERENCE_FILE = "{}../inference_locanet.yaml".format(DATASET_FOLDER) # saves in 1k
