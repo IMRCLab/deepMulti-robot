@@ -8,6 +8,7 @@ from utils import *
 import yaml
 # Tested with single Cf case
 def testing_locanet():
+    xyz_loca = []
     prediction={}
     dist = 5
     testset = Dataset_Test() 
@@ -19,7 +20,7 @@ def testing_locanet():
     model_locanet = tf.keras.Model(input_layer, feature_maps_locanet)
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
-    success, fail = 0, 0
+    success = 0
     for image_name, image_data, target in testset:
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -36,7 +37,9 @@ def testing_locanet():
                 x_loca = (tf.exp(pred_result_locanet[0, xy[0], xy[1], 0])).numpy() # depth
                 y_loca = -x_loca*(curW-160)/170
                 z_loca = -x_loca*(curH-160)/170  # params used for data generation
-                prediction[str(image_name[0])] = np.array((x_loca,y_loca,z_loca)).tolist()
+                xyz_loca.append(np.array((x_loca,y_loca,z_loca)).tolist())
+            prediction[str(image_name[0])] = xyz_loca[:]
+            del xyz_loca[:] 
         else:
             prediction[str(image_name[0])] = np.array((None,None,None)).tolist()
 
