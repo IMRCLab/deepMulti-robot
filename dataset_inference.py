@@ -2,8 +2,8 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
-import config as cfg
-
+# import config as cfg
+from . import config as cfg
 class Dataset_Test(object):
 
     def __init__(self):
@@ -95,8 +95,7 @@ class Dataset_Test(object):
             label[xind, yind, 2] = point_depth
             label[xind, yind, 3] = 1.0
             label[xind, yind, 4:] = smooth_onehot
-        label_point = label
-        return label_point
+        return label
 
     def __len__(self):
         return self.num_batchs
