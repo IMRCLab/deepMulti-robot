@@ -6,8 +6,13 @@ from locaNet import  locaNet
 from dataset_inference import Dataset_Test
 from utils import *
 import yaml
+import shutil
+import os
+import cv2
 # Tested with single Cf case
 def testing_locanet():
+    shutil.rmtree(cfg.DATASET_FOLDER + '../locanet/prediction/', ignore_errors=True)
+    os.mkdir(cfg.DATASET_FOLDER + '../locanet/prediction/')
     xyz_loca = []
     prediction={}
     dist = 5
@@ -28,6 +33,7 @@ def testing_locanet():
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
         if (len(pos_conf_above_threshold_locanet) != 0):
+            img = cv2.imread(os.path.join(cfg.DATASET_FOLDER, image_name[0]))  
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*cfg.LOCA_STRIDE
@@ -36,10 +42,15 @@ def testing_locanet():
                 y_loca = -x_loca*(curW-160)/170
                 z_loca = -x_loca*(curH-160)/170  # params used for data generation
                 xyz_loca.append(np.array((x_loca,y_loca,z_loca)).tolist())
+                cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
+
             prediction[str(image_name[0])] = xyz_loca[:]
             del xyz_loca[:] 
+            cv2.imwrite(os.path.join(cfg.DATASET_FOLDER+ '../locanet/prediction/', image_name[0]), img)
+
         else:
             prediction[str(image_name[0])] = np.array((None,None,None)).tolist()
+        
 
     with open(cfg.INFERENCE_FILE, 'w') as outfile:
         yaml.dump(prediction, outfile)
