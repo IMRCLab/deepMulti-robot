@@ -16,7 +16,7 @@ def testing_locanet():
     xyz_loca = []
     prediction={}
     dist = 5
-    testset = Dataset_Test() 
+    testset = Dataset_Test(cfg) 
     locanet_weights = cfg.WEIGHT_PATH + cfg.OUTPUT_FILE
     input_size   = cfg.TRAIN_INPUT_SIZE
     input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], cfg.INPUT_CHANNEL])
