@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 # import config as cfg
 from . import config as cfg
 class Dataset_Test(object):
@@ -32,31 +32,31 @@ class Dataset_Test(object):
         return self
 
     def __next__(self):
-        with tf.device('/cpu:0'):
-            self.output_size = np.array(self.input_size) // self.stride
-            batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
-            batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
-            batch_image_name = np.empty(self.batch_size, dtype=object)
+        # with tf.device('/cpu:0'):
+        self.output_size = np.array(self.input_size) // self.stride
+        batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
+        batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
+        batch_image_name = np.empty(self.batch_size, dtype=object)
 
-            num = 0
-            if self.batch_count < self.num_batchs:
-                while num < self.batch_size:
-                    index = self.batch_count * self.batch_size + num
-                    if index >= self.num_samples: index -= self.num_samples
-                    annotation = self.annotations[index]
-                    image_name, image, points = self.parse_annotation(annotation)
-                    label_point = self.preprocess_true_points(points)
+        num = 0
+        if self.batch_count < self.num_batchs:
+            while num < self.batch_size:
+                index = self.batch_count * self.batch_size + num
+                if index >= self.num_samples: index -= self.num_samples
+                annotation = self.annotations[index]
+                image_name, image, points = self.parse_annotation(annotation)
+                label_point = self.preprocess_true_points(points)
 
-                    batch_image[num, :, :, :] = image
-                    batch_label[num, :, :, :] = label_point
-                    batch_image_name[num] = image_name
-                    num += 1
-                self.batch_count += 1
-                return batch_image_name, batch_image, batch_label
-            else:
-                self.batch_count = 0
-                np.random.shuffle(self.annotations)
-                raise StopIteration
+                batch_image[num, :, :, :] = image
+                batch_label[num, :, :, :] = label_point
+                batch_image_name[num] = image_name
+                num += 1
+            self.batch_count += 1
+            return batch_image_name, batch_image, batch_label
+        else:
+            self.batch_count = 0
+            np.random.shuffle(self.annotations)
+            raise StopIteration
 
     def parse_annotation(self, annotation):
         line = annotation.split()
