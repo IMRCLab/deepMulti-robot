@@ -1,14 +1,13 @@
 import os
 import cv2
 import numpy as np
-# import tensorflow as tf
-# import config as cfg
-from . import config as cfg
+
 class Dataset_Test(object):
 
-    def __init__(self):
+    def __init__(self, cfg):
         
-        self.annot_path  = cfg.TEST_PATH         
+        self.cfg = cfg
+        self.annot_path  = cfg.TEST_PATH
         self.batch_size  = 1
         self.input_size  = cfg.TRAIN_INPUT_SIZE
         self.stride = cfg.LOCA_STRIDE
@@ -60,11 +59,11 @@ class Dataset_Test(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split()
-        image_path = cfg.DATASET_FOLDER + line[0]
+        image_path = self.cfg.DATASET_FOLDER + line[0]
 
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
-        if cfg.INPUT_CHANNEL == 3:
+        if self.cfg.INPUT_CHANNEL == 3:
             image = cv2.imread(image_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         else:
