@@ -8,6 +8,7 @@ class Dataset_Test(object):
         
         self.cfg = cfg
         self.annot_path  = cfg.TEST_PATH
+        self.data_folder = str(cfg.TEST_PATH)[:-8] + '../raw-images/'
         self.batch_size  = 1
         self.input_size  = cfg.TRAIN_INPUT_SIZE
         self.stride = cfg.LOCA_STRIDE
@@ -59,8 +60,8 @@ class Dataset_Test(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split()
-        image_path = self.cfg.DATASET_FOLDER + line[0]
-
+        # image_path = self.cfg.DATASET_FOLDER + line[0]
+        image_path = self.data_folder + line[0]
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
         if self.cfg.INPUT_CHANNEL == 3:
