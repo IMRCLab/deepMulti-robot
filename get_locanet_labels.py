@@ -31,15 +31,15 @@ def run(yaml_path, img_ext, train_data_percentage):
             for j in range(len(synchronized_data['images'][total_imgs[t]]['visible_neighbors'])):
                 pix = synchronized_data['images'][total_imgs[t]]['visible_neighbors'][j]['pix']
                 pos = synchronized_data['images'][total_imgs[t]]['visible_neighbors'][j]['pos']
-                dataLine += str(pix[0]) + ',' + str(pix[1]) + ',' + str(round(pos[0]*1000)) + ',' + str(round(pos[1]*1000)) + ',' + str(round(pos[2]*1000)) + ' ' # m->mm
+                dataLine += str(int(pix[0])) + ',' + str(int(pix[1])) + ',' + str(round(pos[0]*1000)) + ',' + str(round(pos[1]*1000)) + ',' + str(round(pos[2]*1000)) + ' ' # m->mm
             dataLine += '\n'
             fileTmp.write(dataLine)
         
 def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--yaml', help="dataset.yaml file")
-    parser.add_argument('--img_ext', type=str, default= '*.jpg', help="image extension")
-    parser.add_argument('--training_data', type=int, default=90, help='training data percentage')
+    parser.add_argument('--img_ext', type=str, default= '*.png', help="image extension") # png for real images, jpg for synthetic imgs.
+    parser.add_argument('--training_data', type=int, default=100, help='training data percentage')
 
 
     args = parser.parse_args()

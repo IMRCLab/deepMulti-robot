@@ -8,7 +8,7 @@ class Dataset_Test(object):
         
         self.cfg = cfg
         self.annot_path  = cfg.TEST_PATH
-        self.data_folder = str(cfg.TEST_PATH)[:-8] + '../raw-images/'
+        self.data_folder =  cfg.DATASET_FOLDER
         self.batch_size  = 1
         self.input_size  = cfg.TRAIN_INPUT_SIZE
         self.stride = cfg.LOCA_STRIDE
