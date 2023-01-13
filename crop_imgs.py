@@ -5,13 +5,20 @@ import random
 import os
 import config as cfg
 import shutil
+import argparse
 # Real images have 324x324 size, crop it to fit NN input.
+parser = argparse.ArgumentParser(description='Connect to AI-deck JPEG streamer example')
+
+parser.add_argument("-path", help="Path to the folder with 324x324 size images")
+args = parser.parse_args()
+
 y=2
 x=2
 h=320
 w=320
-full_data_path = cfg.DATASET_FOLDER 
-cropped_images_path = full_data_path + 'raw-images/'
+
+full_data_path = args.path
+cropped_images_path = full_data_path + '../Synchronized-Dataset-2/'
 shutil.rmtree(cropped_images_path, ignore_errors=True)
 os.mkdir(cropped_images_path)
 extension_allowed = '.png'
