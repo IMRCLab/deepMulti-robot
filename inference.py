@@ -10,7 +10,7 @@ import shutil
 import os
 import cv2, argparse
 from pathlib import Path
-# Tested with single Cf case
+# python3 inference.py PATH-TO-MAIN-FOLDER
 def testing_locanet():
     parser = argparse.ArgumentParser()
     parser.add_argument("foldername")
@@ -49,7 +49,6 @@ def testing_locanet():
                 z_loca = -x_loca*(curH-160)/170  # params used for data generation
                 pred_neighbors.append(np.array([x_loca,y_loca,z_loca]))
             if len(pred_neighbors):
-                # shutil.copy(path + robot_name[i] + '/' + img_names[t], synch_data_path + img_names[t])
                 all_robots = {}
                 for h in range(len(pred_neighbors)):
                     per_robot = {}
@@ -60,6 +59,9 @@ def testing_locanet():
                 # visualize predictions
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
                 cv2.imwrite(os.path.join(cfg.DATASET_FOLDER+ '../locanet/prediction/', image_name[0]), img)
+        else:
+            per_image['visible_neighbors'] = []
+            images[image_name[0]] = per_image
 
     predictions['images'] = images
     with open(cfg.INFERENCE_FILE, 'w') as outfile:

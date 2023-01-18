@@ -24,7 +24,7 @@ class Dataset_Test(object):
     def load_annotations(self):
         with open(self.annot_path, 'r') as f:
             txt = f.readlines()
-            annotations = [line.strip() for line in txt if len(line.strip().split()[1:]) != 0]
+            annotations = [line.strip() for line in txt] # if len(line.strip().split()[1:]) != 0]
         # np.random.shuffle(annotations)
         return annotations
 

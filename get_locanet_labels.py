@@ -5,11 +5,11 @@ import os
 import yaml
 import argparse
 import fnmatch
-# Converts dataset.yaml into locanet training format
-# python3 get_locanet_labels.py --yaml 'PATH-TO-SYNCHRONIZED-DATASET/dataset.yaml'
-def run(yaml_path, img_ext, train_data_percentage):
+# Converts dataset.yaml into locanet training format. Images with no robot has just image-name
+# python3 get_locanet_labels.py PATH-TO-SYNCHRONIZED-DATASET/
+def run(synchronized_data_folder, img_ext, train_data_percentage):
 
-    synchronized_data_folder = yaml_path[:-12]
+    yaml_path = synchronized_data_folder + 'dataset.yaml'
     locanet_folder = synchronized_data_folder + '../locanet/'
     shutil.rmtree(locanet_folder, ignore_errors=True)
     os.mkdir(locanet_folder) # Create a folder for saving images
@@ -37,8 +37,8 @@ def run(yaml_path, img_ext, train_data_percentage):
         
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--yaml', help="dataset.yaml file")
-    parser.add_argument('--img_ext', type=str, default= '*.png', help="image extension") # png for real images, jpg for synthetic imgs.
+    parser.add_argument('foldername', help="Path to the Synchronized-Dataset folder")
+    parser.add_argument('--img_ext', type=str, default= '*.jpg', help="image extension") 
     parser.add_argument('--training_data', type=int, default=100, help='training data percentage')
 
 
@@ -46,7 +46,7 @@ def parse_opt():
     return args
 
 def main(args):
-    run(args.yaml, args.img_ext, args.training_data)
+    run(args.foldername, args.img_ext, args.training_data)
 
 
 if __name__ == "__main__":
