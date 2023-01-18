@@ -4,11 +4,12 @@ import numpy as np
 import tensorflow as tf
 # import deepMulti_robot.config as cfg
 import config as cfg
+from pathlib import Path
 
 class Dataset(object):
 
     def __init__(self):
-        self.annot_path  = cfg.TRAIN_ANNOT_PATH         
+        self.annot_path  = cfg.DATASET_FOLDER     
         self.batch_size  = cfg.TRAIN_BATCH_SIZE
 
         self.input_size  = cfg.TRAIN_INPUT_SIZE
@@ -23,9 +24,17 @@ class Dataset(object):
         self.input_channel = cfg.INPUT_CHANNEL
 
     def load_annotations(self):
-        with open(self.annot_path, 'r') as f:
-            txt = f.readlines()
-            annotations = [line.strip() for line in txt if len(line.strip().split()[1:]) != 0]
+        folders = Path(self.annot_path)
+        all_labels = []
+        for training_file in folders.glob("**/locanet/train.txt"):
+            folder = training_file.parent.parent
+            synch_data = str(folder) + '/Synchronized-Dataset/'
+            annot_file = str(folder) + '/locanet/train.txt'
+            with open(annot_file, 'r') as f:
+                txt = f.readlines()
+                labels = [str(synch_data) + ' ' + line.strip() for line in txt] 
+            all_labels.append(labels)
+        annotations = [item for sublist in all_labels for item in sublist] # all labels as one giant list
         np.random.shuffle(annotations)
         return annotations
 
@@ -59,7 +68,7 @@ class Dataset(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split()
-        image_path = cfg.DATASET_FOLDER + line[0]
+        image_path = line[0] + line[1] # main_path + folder
 
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
@@ -71,7 +80,7 @@ class Dataset(object):
             image = image[..., np.newaxis]
         image = image.astype('float32')
         image = image/128.0 - 1.0
-        points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) # works for MRS case
+        points = np.array([list(map(int, point.split(','))) for point in line[2:len(line)]]) # skip main_path, image_name
 
         return image, points
 
