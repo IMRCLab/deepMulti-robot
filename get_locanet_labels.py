@@ -4,7 +4,7 @@ import shutil
 import os
 import yaml
 import argparse
-import fnmatch
+import glob
 # Converts dataset.yaml into locanet training format. Images with no robot has just image-name
 # python3 get_locanet_labels.py PATH-TO-SYNCHRONIZED-DATASET/
 def run(synchronized_data_folder, img_ext, train_data_percentage):
@@ -16,7 +16,8 @@ def run(synchronized_data_folder, img_ext, train_data_percentage):
     
     with open(yaml_path, 'r') as stream:
         synchronized_data = yaml.safe_load(stream)
-    total_imgs = fnmatch.filter(os.listdir(synchronized_data_folder), img_ext)
+    # total_imgs = fnmatch.filter(os.listdir(synchronized_data_folder), img_ext)
+    total_imgs = sorted(filter( os.path.isfile, glob.glob(synchronized_data_folder + img_ext) ) )
     # Prepare training, validation, testing data
     indices = list(range(0, len(total_imgs))) 
     numImgTrain = round(train_data_percentage/100*len(total_imgs))
@@ -39,7 +40,7 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('foldername', help="Path to the Synchronized-Dataset folder")
     parser.add_argument('--img_ext', type=str, default= '*.jpg', help="image extension") 
-    parser.add_argument('--training_data', type=int, default=100, help='training data percentage')
+    parser.add_argument('--training_data', type=int, default=90, help='training data percentage')
 
 
     args = parser.parse_args()
