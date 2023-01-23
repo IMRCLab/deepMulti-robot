@@ -28,10 +28,10 @@ def run(synchronized_data_folder, img_ext, train_data_percentage):
         file_name = locanet_folder + files[k] + '.txt'
         fileTmp = open(file_name, 'w')
         for t in idx[k]: # for each image
-            dataLine = total_imgs[t] + ' '
-            for j in range(len(synchronized_data['images'][total_imgs[t]]['visible_neighbors'])):
-                pix = synchronized_data['images'][total_imgs[t]]['visible_neighbors'][j]['pix']
-                pos = synchronized_data['images'][total_imgs[t]]['visible_neighbors'][j]['pos']
+            dataLine = total_imgs[t][-13:] + ' '
+            for j in range(len(synchronized_data['images'][total_imgs[t][-13:]]['visible_neighbors'])):
+                pix = synchronized_data['images'][total_imgs[t][-13:]]['visible_neighbors'][j]['pix']
+                pos = synchronized_data['images'][total_imgs[t][-13:]]['visible_neighbors'][j]['pos']
                 dataLine += str(int(pix[0])) + ',' + str(int(pix[1])) + ',' + str(round(pos[0]*1000)) + ',' + str(round(pos[1]*1000)) + ',' + str(round(pos[2]*1000)) + ' ' # m->mm
             dataLine += '\n'
             fileTmp.write(dataLine)
