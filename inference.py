@@ -48,6 +48,7 @@ def testing_locanet():
                 y_loca = -x_loca*(curW-160)/170
                 z_loca = -x_loca*(curH-160)/170  # params used for data generation
                 pred_neighbors.append(np.array([x_loca,y_loca,z_loca]))
+                cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
             if len(pred_neighbors):
                 all_robots = {}
                 for h in range(len(pred_neighbors)):
@@ -57,8 +58,8 @@ def testing_locanet():
                 per_image['visible_neighbors'] = all_robots
                 images[image_name[0]] = per_image
                 # visualize predictions
-                cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
-                cv2.imwrite(os.path.join(cfg.DATASET_FOLDER+ '../locanet/prediction/', image_name[0]), img)
+                # cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
+                cv2.imwrite(os.path.join(str(folder)+'/locanet/prediction/', image_name[0]), img)
         else:
             per_image['visible_neighbors'] = []
             images[image_name[0]] = per_image
