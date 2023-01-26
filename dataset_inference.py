@@ -4,25 +4,26 @@ import numpy as np
 
 class Dataset_Test(object):
 
-    def __init__(self, cfg):
+    def __init__(self, foldername, input_size=[320,320], stride=8, input_channel=1):
         
-        self.cfg = cfg
-        self.annot_path  = cfg.TEST_PATH
-        self.data_folder =  cfg.DATASET_FOLDER
+        # self.cfg = cfg
+        self.test_annot_path  = foldername + '/locanet/test.txt'
+        self.data_folder =  foldername + '/Synchronized-Dataset/'
         self.batch_size  = 1
-        self.input_size  = cfg.TRAIN_INPUT_SIZE
-        self.stride = cfg.LOCA_STRIDE
-        self.classes = cfg.LOCA_CLASSES
+        self.input_size  = input_size
+        self.stride = stride
+        self.input_channel = input_channel
+        self.classes = {0: "crazyflie"}
         self.num_classes = len(self.classes)
 
         self.annotations = self.load_annotations()
         self.num_samples = len(self.annotations)
         self.num_batchs  = int(np.ceil(self.num_samples / self.batch_size))
         self.batch_count = 0
-        self.input_channel = cfg.INPUT_CHANNEL
+        self.input_channel = 1
 
     def load_annotations(self):
-        with open(self.annot_path, 'r') as f:
+        with open(self.test_annot_path, 'r') as f:
             txt = f.readlines()
             annotations = [line.strip() for line in txt] # if len(line.strip().split()[1:]) != 0]
         # np.random.shuffle(annotations)
@@ -60,11 +61,10 @@ class Dataset_Test(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split()
-        # image_path = self.cfg.DATASET_FOLDER + line[0]
         image_path = self.data_folder + line[0]
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
-        if self.cfg.INPUT_CHANNEL == 3:
+        if self.input_channel == 3:
             image = cv2.imread(image_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         else:
