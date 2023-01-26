@@ -6,7 +6,6 @@ from locaNet import locaNet, compute_loss
 import config as cfg
 from time import perf_counter, sleep
 
-
 # logdir = "./output/log"
 logdir = cfg.WEIGHT_PATH + "log"
 
@@ -62,8 +61,7 @@ start = perf_counter()
 for epoch in range(cfg.TRAIN_EPOCHS):
     for image_data, target in trainset:
         train_step(image_data, target)
-    # model.save_weights("./output/" + cfg.OUTPUT_FILE)
-    # model.save("./output/" + cfg.OUTPUT_FILE + ".h5")
+
     model.save_weights(cfg.WEIGHT_PATH + cfg.OUTPUT_FILE)
     model.save(cfg.WEIGHT_PATH + cfg.OUTPUT_FILE + ".h5")
 
