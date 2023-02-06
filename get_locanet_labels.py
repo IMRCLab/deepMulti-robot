@@ -37,7 +37,7 @@ def run(main_data_folder, img_ext, train_data_percentage):
             file_name = locanet_folder + files[k] + '.txt'
             fileTmp = open(file_name, 'a')
             for t in idx[k]: # for each image
-                dataLine = total_imgs[t].split("/")[-1] + ' ' #total_imgs[t][-13:] + ' '
+                dataLine = str(robot_number) + '/' + total_imgs[t].split("/")[-1] + ' ' 
                 for j in range(len(synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'])):
                     pix = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pix']
                     pos = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pos']
