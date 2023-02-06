@@ -60,7 +60,7 @@ class Dataset_Test(object):
             raise StopIteration
 
     def parse_annotation(self, annotation):
-        line = annotation.split()
+        line = annotation.split() # 0/image_name.jpg
         image_path = self.data_folder + line[0]
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)

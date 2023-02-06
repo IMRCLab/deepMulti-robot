@@ -37,7 +37,8 @@ def testing_locanet():
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
     predictions, images = {},{}
-    for image_name, image_data, target in testset:
+    for folder_image_name, image_data, target in testset:
+        image_name = folder_image_name[0].split("/")[-1] 
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -45,7 +46,7 @@ def testing_locanet():
         pos_conf_above_threshold_locanet = np.argwhere(conf_locanet > 0.33)
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
-        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', image_name[0]))  
+        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', folder_image_name[0]))  
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]
@@ -63,14 +64,14 @@ def testing_locanet():
                     per_robot['pos'] = pred_neighbors[h].tolist() 
                     all_robots[h] = per_robot
                 per_image['visible_neighbors'] = all_robots
-                images[image_name[0]] = per_image
+                images[image_name] = per_image
                 # visualize predictions
-                # cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
-                cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
+                cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
+                cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
         else:
             per_image['visible_neighbors'] = []
-            images[image_name[0]] = per_image
-            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
+            images[image_name] = per_image
+            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
 
 
     predictions['images'] = images
