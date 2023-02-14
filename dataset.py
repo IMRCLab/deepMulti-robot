@@ -69,7 +69,6 @@ class Dataset(object):
     def parse_annotation(self, annotation):
         line = annotation.split()
         image_path = line[0] + line[1] # main_path + folder
-
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
         if cfg.INPUT_CHANNEL == 3:
@@ -89,7 +88,7 @@ class Dataset(object):
         for point in points:
             # note that label dimension is 320x224, therefore swap axes as follows
             point_xy    = np.array([point[1], point[0]])
-            point_depth = point[2]
+            point_depth = point[4] # point[2]
             point_class = 0
 
             onehot = np.zeros(self.num_classes, dtype=np.float)

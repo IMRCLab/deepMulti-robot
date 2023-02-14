@@ -52,9 +52,9 @@ def testing_locanet():
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*stride
                 curW = (xy[1]+0.5)*stride   # get pixel values in image
-                x_loca = (tf.exp(pred_result_locanet[0, xy[0], xy[1], 0])).numpy() # depth
-                y_loca = -x_loca*(curW-160)/170
-                z_loca = -x_loca*(curH-160)/170  # params used for data generation
+                z_loca = (tf.exp(pred_result_locanet[0, xy[0], xy[1], 0])).numpy() # depth
+                x_loca = -z_loca*(curW-160)/170
+                y_loca = -z_loca*(curH-160)/170  # params used for data generation
                 pred_neighbors.append(np.array([x_loca,y_loca,z_loca]))
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
             if len(pred_neighbors):
