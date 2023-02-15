@@ -53,8 +53,8 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('foldername', help="Path to the Synchronized-Dataset folder")
     parser.add_argument('--img_ext', type=str, default= '*.jpg', help="image extension") 
-    parser.add_argument('--training_data_percentage', type=int, default=90, help='training data percentage')
-    parser.add_argument('--data_split', default={'0': 10, '1':50, '2': 100}, help='percentage for data split between different number of robots')
+    parser.add_argument('--training_data_percentage', type=int, default=100, help='training data percentage')
+    parser.add_argument('--data_split', default={'0': 180, '1':950, '2': 1300}, help='percentage for data split between different number of robots')
 
     args = parser.parse_args()
     return args

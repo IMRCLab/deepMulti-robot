@@ -64,13 +64,13 @@ def testing_locanet():
                     per_robot['pos'] = pred_neighbors[h].tolist() 
                     all_robots[h] = per_robot
                 per_image['visible_neighbors'] = all_robots
-                images[image_name] = per_image
+                images[str(len(pred_neighbors)) + '/' + image_name] = per_image
                 # visualize predictions
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
                 cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
         else:
             per_image['visible_neighbors'] = []
-            images[image_name] = per_image
+            images[str(0) + '/' + image_name] = per_image
             cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
 
 
