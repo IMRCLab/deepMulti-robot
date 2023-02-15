@@ -37,10 +37,10 @@ def run(main_data_folder, img_ext, train_data_percentage):
             file_name = locanet_folder + files[k] + '.txt'
             fileTmp = open(file_name, 'a')
             for t in idx[k]: # for each image
-                dataLine = str(robot_number) + '/' + total_imgs[t].split("/")[-1] + ' ' 
-                for j in range(len(synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'])):
-                    pix = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pix']
-                    pos = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pos']
+                dataLine = str(robot_number) + '/' + total_imgs[t].split("/")[-1] + ' ' # 1/img_name
+                for j in range(len(synchronized_data['images'][str(robot_number) + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'])):
+                    pix = synchronized_data['images'][str(robot_number) + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pix']
+                    pos = synchronized_data['images'][str(robot_number) + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pos']
                     dataLine += str(int(pix[0])) + ',' + str(int(pix[1])) + ',' + str(round(pos[0]*1000)) + ',' + str(round(pos[1]*1000)) + ',' + str(round(pos[2]*1000)) + ' ' # m->mm
                 dataLine += '\n'
                 fileTmp.write(dataLine)
