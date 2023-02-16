@@ -19,7 +19,6 @@ def testing_locanet():
     parser.add_argument('--stride', type=int, default=8, help='stride for depth,conf maps')
     parser.add_argument('--input_channel', type=int, default=1, help='image type RGB or GRAY')
 
-
     args = parser.parse_args()
     folder = str(Path(args.foldername))
     locanet_weights = args.weights
@@ -28,6 +27,8 @@ def testing_locanet():
     stride = args.stride
     shutil.rmtree(str(folder) + '/locanet/prediction/', ignore_errors=True)
     os.mkdir(str(folder) + '/locanet/prediction/')
+    dataset_yaml = Path(folder) / "Synchronized-Dataset/dataset.yaml"
+
     dist = 5
     testset = Dataset_Test(folder) 
     input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], input_channel])
@@ -37,8 +38,12 @@ def testing_locanet():
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
     predictions, images = {},{}
+    # get dataset.yaml
+    with open(dataset_yaml, 'r') as stream:
+        synchronized_data = yaml.safe_load(stream)  
     for folder_image_name, image_data, target in testset:
         image_name = folder_image_name[0].split("/")[-1] 
+        robot_name = image_name[:-10] # cf3, cf231
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -47,14 +52,17 @@ def testing_locanet():
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
         img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', folder_image_name[0]))  
+        # get camera parameters
+        camera_matrix = synchronized_data['calibration'][robot_name]['camera_matrix']
+        fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*stride
                 curW = (xy[1]+0.5)*stride   # get pixel values in image
                 z_loca = (tf.exp(pred_result_locanet[0, xy[0], xy[1], 0])).numpy() # depth
-                x_loca = z_loca*(curW-160)/170
-                y_loca = z_loca*(curH-160)/170  # params used for data generation
+                x_loca = z_loca*(curW-ox)/fx
+                y_loca = z_loca*(curH-oy)/fy  
                 pred_neighbors.append(np.array([x_loca,y_loca,z_loca]))
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
             if len(pred_neighbors):
