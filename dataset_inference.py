@@ -38,6 +38,7 @@ class Dataset_Test(object):
         batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
         batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
         batch_image_name = np.empty(self.batch_size, dtype=object)
+        batch_robot_num = np.empty(self.batch_size)
 
         num = 0
         if self.batch_count < self.num_batchs:
@@ -45,23 +46,25 @@ class Dataset_Test(object):
                 index = self.batch_count * self.batch_size + num
                 if index >= self.num_samples: index -= self.num_samples
                 annotation = self.annotations[index]
-                image_name, image, points = self.parse_annotation(annotation)
+                robot_num, image_name, image, points = self.parse_annotation(annotation)
                 label_point = self.preprocess_true_points(points)
 
                 batch_image[num, :, :, :] = image
                 batch_label[num, :, :, :] = label_point
                 batch_image_name[num] = image_name
+                batch_robot_num = robot_num
                 num += 1
             self.batch_count += 1
-            return batch_image_name, batch_image, batch_label
+            return batch_robot_num, batch_image_name, batch_image, batch_label
         else:
             self.batch_count = 0
             np.random.shuffle(self.annotations)
             raise StopIteration
 
     def parse_annotation(self, annotation):
-        line = annotation.split() # 0/image_name.jpg
-        image_path = self.data_folder + line[0]
+        line = annotation.split() # image_name.jpg
+        image_path = self.data_folder + str(len(line)-1) + '/' + line[0]
+        gt_robot_num = len(line)-1
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
         if self.input_channel == 3:
@@ -74,7 +77,7 @@ class Dataset_Test(object):
         image = image/128.0 - 1.0
         points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) # works for MRS case
 
-        return line[0], image, points
+        return gt_robot_num, line[0], image, points
 
     def preprocess_true_points(self, points):
         label = np.zeros((self.output_size[0], self.output_size[1], 4+self.num_classes))

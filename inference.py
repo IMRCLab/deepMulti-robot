@@ -27,7 +27,7 @@ def testing_locanet():
     stride = args.stride
     shutil.rmtree(str(folder) + '/locanet/prediction/', ignore_errors=True)
     os.mkdir(str(folder) + '/locanet/prediction/')
-    dataset_yaml = Path(folder) / "Synchronized-Dataset/dataset.yaml"
+    # dataset_yaml = Path(folder) / "Synchronized-Dataset/dataset.yaml"
 
     dist = 5
     testset = Dataset_Test(folder) 
@@ -39,10 +39,10 @@ def testing_locanet():
     start = perf_counter()
     predictions, images = {},{}
     # get dataset.yaml
-    with open(dataset_yaml, 'r') as stream:
-        synchronized_data = yaml.safe_load(stream)  
-    for folder_image_name, image_data, target in testset:
-        image_name = folder_image_name[0].split("/")[-1] 
+    # with open(dataset_yaml, 'r') as stream:
+    #     synchronized_data = yaml.safe_load(stream)  
+    for image_name, image_data, target in testset:
+        # image_name = image_name[0].split("/")[-1] 
         robot_name = image_name[:-10] # cf3, cf231
         pred_neighbors, per_image = [], {}
         # predict with locanet
@@ -51,10 +51,14 @@ def testing_locanet():
         pos_conf_above_threshold_locanet = np.argwhere(conf_locanet > 0.33)
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
-        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', folder_image_name[0]))  
+        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', image_name[0]))  
+
         # get camera parameters
-        camera_matrix = synchronized_data['calibration'][robot_name]['camera_matrix']
-        fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
+        # dataset_yaml = 
+        # with open(dataset_yaml, 'r') as stream:
+        #     synchronized_data = yaml.safe_load(stream)
+        # camera_matrix = synchronized_data['calibration'][robot_name]['camera_matrix']
+        # fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]

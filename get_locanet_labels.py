@@ -12,16 +12,15 @@ from pathlib import Path
 # python3 get_locanet_labels.py PATH-TO-MAIN-FOLDER
 def run(main_data_folder, img_ext, train_data_percentage, data_split):
     synchronized_data_folder = main_data_folder + 'Synchronized-Dataset/'
-    yaml_path = synchronized_data_folder + 'dataset.yaml'
     locanet_folder = main_data_folder + 'locanet/'
     shutil.rmtree(locanet_folder, ignore_errors=True)
     os.mkdir(locanet_folder) # Create a folder for saving images
     
-    with open(yaml_path, 'r') as stream:
-        synchronized_data = yaml.safe_load(stream)
     files = ['train', 'val']   
-    # for folder in [f.path for f in os.scandir(synchronized_data_folder) if f.is_dir()]:
     for key in data_split: # for each folder 0,1,2
+        yaml_path = synchronized_data_folder + key + '/' + 'dataset.yaml'
+        with open(yaml_path, 'r') as stream:
+            synchronized_data = yaml.safe_load(stream)
         total_imgs = sorted(filter(os.path.isfile, glob.glob(synchronized_data_folder + key + '/' + img_ext)))
         if (len(total_imgs)) or data_split[key] <= len(total_imgs):
             indices = list(range(0, data_split[key])) 
@@ -32,10 +31,10 @@ def run(main_data_folder, img_ext, train_data_percentage, data_split):
                 file_name = locanet_folder + files[k] + '.txt'
                 fileTmp = open(file_name, 'a')
                 for t in idx[k]: # for each image
-                    dataLine = key + '/' + total_imgs[t].split("/")[-1] + ' ' # 1/img_name
-                    for j in range(len(synchronized_data['images'][key + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'])):
-                        pix = synchronized_data['images'][key + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pix']
-                        pos = synchronized_data['images'][key + '/' + total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pos']
+                    dataLine = total_imgs[t].split("/")[-1] + ' ' # 1/img_name
+                    for j in range(len(synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'])):
+                        pix = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pix']
+                        pos = synchronized_data['images'][total_imgs[t].split("/")[-1]]['visible_neighbors'][j]['pos']
                         dataLine += str(int(pix[0])) + ',' + str(int(pix[1])) + ',' + str(round(pos[0]*1000)) + ',' + str(round(pos[1]*1000)) + ',' + str(round(pos[2]*1000)) + ' ' # m->mm
                     dataLine += '\n'
                     fileTmp.write(dataLine)
@@ -54,7 +53,7 @@ def parse_opt():
     parser.add_argument('foldername', help="Path to the Synchronized-Dataset folder")
     parser.add_argument('--img_ext', type=str, default= '*.jpg', help="image extension") 
     parser.add_argument('--training_data_percentage', type=int, default=100, help='training data percentage')
-    parser.add_argument('--data_split', default={'0': 180, '1':950, '2': 1300}, help='percentage for data split between different number of robots')
+    parser.add_argument('--data_split', default={'0': 10, '1':10, '2': 10}, help='percentage for data split between different number of robots')
 
     args = parser.parse_args()
     return args
