@@ -27,7 +27,6 @@ def testing_locanet():
     stride = args.stride
     shutil.rmtree(str(folder) + '/locanet/prediction/', ignore_errors=True)
     os.mkdir(str(folder) + '/locanet/prediction/')
-    # dataset_yaml = Path(folder) / "Synchronized-Dataset/dataset.yaml"
 
     dist = 5
     testset = Dataset_Test(folder) 
@@ -38,12 +37,17 @@ def testing_locanet():
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
     predictions, images = {},{}
-    # get dataset.yaml
-    # with open(dataset_yaml, 'r') as stream:
-    #     synchronized_data = yaml.safe_load(stream)  
-    for image_name, image_data, target in testset:
-        # image_name = image_name[0].split("/")[-1] 
-        robot_name = image_name[:-10] # cf3, cf231
+    dict_calibs = {}
+    subfolders = [ f.path for f in os.scandir(Path(folder) / "Synchronized-Dataset/") if f.is_dir() ]
+    for subfolder in subfolders:  
+        id = subfolder.split("/")[-1]
+        dict_calibs['calibration_{}'.format(id)] = {}
+        with open(Path(subfolder) / 'dataset.yaml', 'r') as stream:
+            synchronized_data = yaml.safe_load(stream)  
+        dict_calibs['calibration_{}'.format(id)]['calibration'] = synchronized_data['calibration']
+
+    for robot_number, image_name, image_data, _ in testset:
+        robot_name = image_name[0][:-10] # cf3, cf231
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -51,14 +55,10 @@ def testing_locanet():
         pos_conf_above_threshold_locanet = np.argwhere(conf_locanet > 0.33)
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
-        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/', image_name[0]))  
+        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/'+str(robot_number)+'/', image_name[0]))  
 
-        # get camera parameters
-        # dataset_yaml = 
-        # with open(dataset_yaml, 'r') as stream:
-        #     synchronized_data = yaml.safe_load(stream)
-        # camera_matrix = synchronized_data['calibration'][robot_name]['camera_matrix']
-        # fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
+        camera_matrix = dict_calibs['calibration_{}'.format(robot_number)]['calibration'][str(robot_name)]['camera_matrix']
+        fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
                 xy = pos_conf_above_threshold_locanet[j]
@@ -76,14 +76,14 @@ def testing_locanet():
                     per_robot['pos'] = pred_neighbors[h].tolist() 
                     all_robots[h] = per_robot
                 per_image['visible_neighbors'] = all_robots
-                images[str(len(pred_neighbors)) + '/' + image_name] = per_image
+                images[image_name[0]] = per_image
                 # visualize predictions
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
-                cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
+            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
         else:
             per_image['visible_neighbors'] = []
-            images[str(0) + '/' + image_name] = per_image
-            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name), img)
+            images[image_name[0]] = per_image
+            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
 
 
     predictions['images'] = images
