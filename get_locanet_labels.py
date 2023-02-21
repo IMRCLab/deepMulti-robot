@@ -2,6 +2,7 @@ import yaml
 import argparse
 from pathlib import Path
 import itertools
+import os
 
 # python3 get_locanet_labels.py -f arg1 -f arg2 
 def main():
@@ -12,11 +13,12 @@ def main():
     data = args.file  
     mode = args.mode
 
+    folder = Path(data[0][0]).parent.parent.parent / "locanet"
+    os.mkdir(folder)
     if mode == 'train':
-        file_name = '/home/akmaral/Desktop/train.txt' # change PATH        
+        file_name = str(folder) + '/train.txt'      
     else:
-        file_name = '/home/akmaral/Desktop/test.txt' # change PATH
-
+        file_name = str(folder) + '/test.txt' 
     fileTmp = open(file_name, 'a')
     for i in range(len(data)): 
         main_folder =  str(Path(data[i][0]).parent) 
