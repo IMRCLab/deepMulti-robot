@@ -4,11 +4,9 @@ import numpy as np
 
 class Dataset_Test(object):
 
-    def __init__(self, foldername, input_size=[320,320], stride=8, input_channel=1):
+    def __init__(self, test_annot_path, input_size=[320,320], stride=8, input_channel=1):
         
-        # self.cfg = cfg
-        self.test_annot_path  = foldername + '/locanet/test.txt'
-        self.data_folder =  foldername + '/Synchronized-Dataset/'
+        self.test_annot_path  = test_annot_path
         self.batch_size  = 1
         self.input_size  = input_size
         self.stride = stride
@@ -37,8 +35,7 @@ class Dataset_Test(object):
         self.output_size = np.array(self.input_size) // self.stride
         batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
         batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
-        batch_image_name = np.empty(self.batch_size, dtype=object)
-        batch_robot_num = np.empty(self.batch_size)
+        batch_image_path = np.empty(self.batch_size, dtype=object)
 
         num = 0
         if self.batch_count < self.num_batchs:
@@ -46,16 +43,15 @@ class Dataset_Test(object):
                 index = self.batch_count * self.batch_size + num
                 if index >= self.num_samples: index -= self.num_samples
                 annotation = self.annotations[index]
-                robot_num, image_name, image, points = self.parse_annotation(annotation)
+                image_name, image, points = self.parse_annotation(annotation)
                 label_point = self.preprocess_true_points(points)
 
                 batch_image[num, :, :, :] = image
                 batch_label[num, :, :, :] = label_point
-                batch_image_name[num] = image_name
-                batch_robot_num = robot_num
+                batch_image_path[num] = image_name
                 num += 1
             self.batch_count += 1
-            return batch_robot_num, batch_image_name, batch_image, batch_label
+            return batch_image_path, batch_image, batch_label
         else:
             self.batch_count = 0
             np.random.shuffle(self.annotations)
@@ -63,8 +59,7 @@ class Dataset_Test(object):
 
     def parse_annotation(self, annotation):
         line = annotation.split() # image_name.jpg
-        image_path = self.data_folder + str(len(line)-1) + '/' + line[0]
-        gt_robot_num = len(line)-1
+        image_path = line[0]
         if not os.path.exists(image_path):
             raise KeyError("%s does not exist ... " %image_path)
         if self.input_channel == 3:
@@ -77,7 +72,7 @@ class Dataset_Test(object):
         image = image/128.0 - 1.0
         points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) # works for MRS case
 
-        return gt_robot_num, line[0], image, points
+        return line[0], image, points
 
     def preprocess_true_points(self, points):
         label = np.zeros((self.output_size[0], self.output_size[1], 4+self.num_classes))

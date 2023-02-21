@@ -10,26 +10,28 @@ import shutil
 import os
 import cv2, argparse
 from pathlib import Path
-# python3 inference.py PATH-TO-MAIN-FOLDER --weights PATH-TO-WEIGHTS
+# python3 inference.py PATH-TO-TEST-TXT --weights PATH-TO-WEIGHTS
 def testing_locanet():
     parser = argparse.ArgumentParser()
-    parser.add_argument("foldername")
+    parser.add_argument("testfile")
     parser.add_argument('--weights', type=str, default='/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/synth-5k', help='weights path(s)')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=(320,320), help='image size h,w')
     parser.add_argument('--stride', type=int, default=8, help='stride for depth,conf maps')
     parser.add_argument('--input_channel', type=int, default=1, help='image type RGB or GRAY')
 
     args = parser.parse_args()
-    folder = str(Path(args.foldername))
+    test_txt = args.testfile
     locanet_weights = args.weights
     input_size = args.imgsz
     input_channel = args.input_channel
     stride = args.stride
-    shutil.rmtree(str(folder) + '/locanet/prediction/', ignore_errors=True)
-    os.mkdir(str(folder) + '/locanet/prediction/')
 
+    main_folder = str(Path(test_txt).parent)
+    prediction_folder = main_folder + "/prediction/"
+    shutil.rmtree(prediction_folder, ignore_errors=True)
+    os.mkdir(prediction_folder)
     dist = 5
-    testset = Dataset_Test(folder) 
+    testset = Dataset_Test(test_txt) 
     input_layer  = tf.keras.layers.Input([input_size[0], input_size[1], input_channel])
 
     feature_maps_locanet = locaNet(input_layer)
@@ -37,17 +39,10 @@ def testing_locanet():
     model_locanet.load_weights(locanet_weights)
     start = perf_counter()
     predictions, images = {},{}
-    dict_calibs = {}
-    subfolders = [ f.path for f in os.scandir(Path(folder) / "Synchronized-Dataset/") if f.is_dir() ]
-    for subfolder in subfolders:  
-        id = subfolder.split("/")[-1]
-        dict_calibs['calibration_{}'.format(id)] = {}
-        with open(Path(subfolder) / 'dataset.yaml', 'r') as stream:
-            synchronized_data = yaml.safe_load(stream)  
-        dict_calibs['calibration_{}'.format(id)]['calibration'] = synchronized_data['calibration']
-
-    for robot_number, image_name, image_data, _ in testset:
-        robot_name = image_name[0][:-10] # cf3, cf231
+    #     with open(Path(subfolder) / 'dataset.yaml', 'r') as stream:
+    #         synchronized_data = yaml.safe_load(stream)  
+    for image_path, image_data, _ in testset:
+        image_name = image_path[0].split('/')[-1]
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -55,12 +50,10 @@ def testing_locanet():
         pos_conf_above_threshold_locanet = np.argwhere(conf_locanet > 0.33)
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
-        img = cv2.imread(os.path.join(folder+'/Synchronized-Dataset/'+str(robot_number)+'/', image_name[0]))  
-
-        camera_matrix = dict_calibs['calibration_{}'.format(robot_number)]['calibration'][str(robot_name)]['camera_matrix']
-        fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
+        img = cv2.imread(image_path[0])  
+        fx,fy,ox,oy = 170.,170.,160.,160
         if (len(pos_conf_above_threshold_locanet) != 0):
-            for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in image_i
+            for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in img
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*stride
                 curW = (xy[1]+0.5)*stride   # get pixel values in image
@@ -76,18 +69,18 @@ def testing_locanet():
                     per_robot['pos'] = pred_neighbors[h].tolist() 
                     all_robots[h] = per_robot
                 per_image['visible_neighbors'] = all_robots
-                images[image_name[0]] = per_image
+                images[image_name] = per_image
                 # visualize predictions
                 cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
-            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
+            cv2.imwrite(os.path.join(prediction_folder, image_name), img)
         else:
             per_image['visible_neighbors'] = []
-            images[image_name[0]] = per_image
-            cv2.imwrite(os.path.join(folder+'/locanet/prediction/', image_name[0]), img)
+            images[image_name] = per_image
+            cv2.imwrite(os.path.join(prediction_folder, image_name), img)
 
 
     predictions['images'] = images
-    with open(folder + '/locanet/inference_locanet.yaml', 'w') as outfile:
+    with open(main_folder + '/inference_locanet.yaml', 'w') as outfile:
         yaml.dump(predictions, outfile)
     end = perf_counter()
     print("Time taken for test is {} min.".format((end-start)/60.))
