@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import itertools
 import os
-
+import shutil
 # python3 get_locanet_labels.py -f arg1 -f arg2 
 def main():
     parser = argparse.ArgumentParser()
@@ -14,6 +14,7 @@ def main():
     mode = args.mode
 
     folder = Path(data[0][0]).parent.parent.parent / "locanet"
+    shutil.rmtree(folder, ignore_errors=True)
     os.mkdir(folder)
     if mode == 'train':
         file_name = str(folder) + '/train.txt'      
@@ -21,7 +22,7 @@ def main():
         file_name = str(folder) + '/test.txt' 
     fileTmp = open(file_name, 'a')
     for i in range(len(data)): 
-        main_folder =  str(Path(data[i][0]).parent) 
+        main_folder =  str(Path(data[i][0]).parent.parent) # without /0
         yaml_file = data[i][0]
         with open(yaml_file, 'r') as stream:
             synchronized_data = yaml.safe_load(stream)

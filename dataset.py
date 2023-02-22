@@ -86,7 +86,7 @@ class Dataset(object):
             image = image[..., np.newaxis]
         image = image.astype('float32')
         image = image/128.0 - 1.0
-        points = np.array([list(map(int, point.split(','))) for point in line[2:len(line)]]) # skip main_path, image_name
+        points = np.array([list(map(int, point.split(','))) for point in line[1:len(line)]]) 
 
         return image, points
 
