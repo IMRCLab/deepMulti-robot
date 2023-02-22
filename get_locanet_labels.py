@@ -33,6 +33,8 @@ def main():
                 for neighbor in neighbors:
                     cx, cy = neighbor['pix']
                     x, y, z = neighbor['pos']
+                    if cx >= 320 or cy >= 320 or cx <= 0 or cy <= 0: 
+                            continue
                     dataLine += str(int(cx)) + ',' + str(int(cy)) + ',' + str(round(x*1000)) + ',' + str(round(y*1000)) + ',' + str(round(z*1000)) + ' ' # m->mm
                 dataLine += '\n'
             else:
