@@ -35,7 +35,7 @@ class Dataset_Test(object):
         self.output_size = np.array(self.input_size) // self.stride
         batch_image = np.zeros((self.batch_size, self.input_size[0], self.input_size[1], self.input_channel), dtype=np.float32)
         batch_label = np.zeros((self.batch_size, self.output_size[0], self.output_size[1], 4 + self.num_classes), dtype=np.float32)
-        batch_image_path = np.empty(self.batch_size, dtype=object)
+        # batch_image_path = np.empty(self.batch_size, dtype=object)
 
         num = 0
         if self.batch_count < self.num_batchs:
@@ -48,10 +48,10 @@ class Dataset_Test(object):
 
                 batch_image[num, :, :, :] = image
                 batch_label[num, :, :, :] = label_point
-                batch_image_path[num] = image_name
+                # batch_image_path[num] = image_name
                 num += 1
             self.batch_count += 1
-            return batch_image_path, batch_image, batch_label
+            return   image_name, batch_image, batch_label #batch_image_path, batch_image, batch_label
         else:
             self.batch_count = 0
             np.random.shuffle(self.annotations)
