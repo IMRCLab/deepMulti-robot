@@ -26,10 +26,13 @@ def train(cfg_yaml):
 
     input_tensor = tf.keras.layers.Input([cfg['TRAIN_INPUT_SIZE'][0], cfg['TRAIN_INPUT_SIZE'][1], cfg['INPUT_CHANNEL']])
     conv_tensors = locaNet(input_tensor)
-
     model = tf.keras.Model(input_tensor, conv_tensors)
-    optimizer = tf.keras.optimizers.Adam()
 
+    if os.listdir(cfg['WEIGHT_PATH']):
+        model.load_weights(cfg['WEIGHT_PATH'] + cfg['OUTPUT_FILE'])
+        print('Refining the Model')
+
+    optimizer = tf.keras.optimizers.Adam()
     def train_step(image_data, target):
         with tf.GradientTape() as tape:
             # Prediction, loss and gradient. Output 28x40x2 (depth and confidence)
@@ -48,7 +51,7 @@ def train(cfg_yaml):
             # Change learning rate
             global_steps.assign_add(1)
             if global_steps < warmup_steps:
-                lr = global_steps / warmup_steps *cfg['TRAIN_LR_INIT']
+                lr = global_steps / warmup_steps*cfg['TRAIN_LR_INIT']
             else:
                 lr = cfg['TRAIN_LR_END'] + 0.5 * (cfg['TRAIN_LR_INIT'] - cfg['TRAIN_LR_END']) * (
                     (1 + tf.cos((global_steps - warmup_steps) / (total_steps - warmup_steps) * 3.1415))
