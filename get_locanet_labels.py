@@ -38,6 +38,8 @@ def get_labels(file, output_folder, mode):
     with open(locanet_folder / "filename_to_dataset_mapping.yaml", "w") as f:
         yaml.dump(filename_to_dataset_key, f)
 
+    shutil.copy(yaml_file, locanet_folder / "dataset.yaml")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f','--file', type=str, help='dataset.yaml file')

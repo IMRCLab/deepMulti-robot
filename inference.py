@@ -53,7 +53,7 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
         filename_to_dataset_key = yaml.safe_load(stream)
     
     # read original data
-    with open(Path(locanet_folder).parent / "dataset_filtered.yaml", 'r') as stream:
+    with open(Path(locanet_folder) / "dataset.yaml", 'r') as stream:
         filtered_dataset = yaml.safe_load(stream)
 
     for image_path, image_data, _ in testset:
@@ -70,15 +70,18 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
         img = cv2.imread(str(image_path))  
         calibration_key = filtered_dataset['images'][filename_to_dataset_key[key]]['calibration']
         camera_matrix = np.array(filtered_dataset['calibration'][calibration_key]['camera_matrix'])
+        dist_vec = np.array(filtered_dataset['calibration'][calibration_key]['dist_coeff'])
         fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in img
                 xy = pos_conf_above_threshold_locanet[j]
                 curH = (xy[0]-0.5)*stride
-                curW = (xy[1]+0.5)*stride   
+                curW = (xy[1]+0.5)*stride
+                center = np.array([curH, curW], dtype=float)
+                center_undistorted = cv2.undistortPoints(center, camera_matrix, dist_vec, None, camera_matrix).flatten()
                 z_loca = (tf.exp(pred_result_locanet[0, xy[0], xy[1], 0])).numpy() 
-                x_loca = z_loca*(curW-ox)/fx
-                y_loca = z_loca*(curH-oy)/fy  
+                x_loca = z_loca*(center_undistorted[1]-ox)/fx
+                y_loca = z_loca*(center_undistorted[0]-oy)/fy  
                 pred_neighbors.append(np.array([x_loca,y_loca,z_loca]))
                 # cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
             if len(pred_neighbors):
@@ -90,7 +93,7 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
                 per_image['visible_neighbors'] = all_robots
                 images[filename_to_dataset_key[key]] = per_image
                 # visualize predictions
-                cv2.rectangle(img, (int(curW), int(curH)), (int(curW), int(curH)), (0, 0, 255), 4)
+                cv2.rectangle(img, (int(center_undistorted[1]), int(center_undistorted[0])), (int(center_undistorted[1]), int(center_undistorted[0])), (0, 0, 255), 4)
             cv2.imwrite(os.path.join(prediction_folder, image_name), img)
         else:
             per_image['visible_neighbors'] = []
