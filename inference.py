@@ -47,7 +47,8 @@ def testing_locanet():
     for image_path, image_data, _ in testset:
         image_path = Path(image_path)
         image_name = str(image_path.name)
-        key = str(Path(image_path.parent.name) / image_name)
+        # key = str(Path(image_path.parent.name) / image_name)
+        key = image_name
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -85,10 +86,12 @@ def testing_locanet():
 
 
     predictions['images'] = images
-    with open(locanet_folder + '/inference_locanet.yaml', 'w') as outfile:
-        yaml.dump(predictions, outfile)
+
     end = perf_counter()
     print("Time taken for test is {} min.".format((end-start)/60.))
+
+    with open(locanet_folder/"inference_locanet.yaml", 'w') as outfile:
+        yaml.dump(predictions, outfile)
 
 
 if __name__ == "__main__":

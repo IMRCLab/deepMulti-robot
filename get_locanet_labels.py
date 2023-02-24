@@ -13,7 +13,7 @@ def main():
     data = args.file  
     mode = args.mode
 
-    main_folder =  Path(args.file).parent.parent
+    main_folder =  Path(args.file).parent # with filtered.yaml
 
     locanet_folder = main_folder / "locanet"
     shutil.rmtree(locanet_folder, ignore_errors=True)
@@ -48,9 +48,12 @@ def main():
             x, y, z = neighbor['pos']
             # if cx >= 320 or cy >= 320 or cx <= 0 or cy <= 0: 
             #     continue
-            dataLine += str(int(cx)) + ',' + str(int(cy)) + ',' + str(round(x*1000)) + ',' + str(round(y*1000)) + ',' + str(round(z*1000)) + ' ' # m->mm
+            dataLine += ' ' + str(int(cx)) + ',' + str(int(cy)) + ',' + str(round(x*1000)) + ',' + str(round(y*1000)) + ',' + str(round(z*1000)) + ' ' # m->mm
         dataLine += '\n'
         fileTmp.write(dataLine)
+
+    with open(locanet_folder / "filename_to_dataset_mapping.yaml", "w") as f:
+        yaml.dump(filename_to_dataset_key, f)
         
 if __name__ == "__main__":
     main()
