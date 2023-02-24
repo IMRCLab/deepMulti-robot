@@ -51,6 +51,10 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
     # read mapping
     with open(locanet_folder / "filename_to_dataset_mapping.yaml", 'r') as stream:
         filename_to_dataset_key = yaml.safe_load(stream)
+    
+    # read original data
+    with open(Path(locanet_folder).parent / "dataset_filtered.yaml", 'r') as stream:
+        filtered_dataset = yaml.safe_load(stream)
 
     for image_path, image_data, _ in testset:
         image_path = Path(image_path)
@@ -64,7 +68,9 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
         list_pos_locanet = pos_conf_above_threshold_locanet.tolist()
         pos_conf_above_threshold_locanet = clean_array2d(list_pos_locanet, dist)
         img = cv2.imread(str(image_path))  
-        fx,fy,ox,oy = 170.,170.,160.,160        
+        calibration_key = filtered_dataset['images'][filename_to_dataset_key[key]]['calibration']
+        camera_matrix = np.array(filtered_dataset['calibration'][calibration_key]['camera_matrix'])
+        fx,fy,ox,oy = camera_matrix[0][0], camera_matrix[1][1], camera_matrix[0][2], camera_matrix[1][2]
         if (len(pos_conf_above_threshold_locanet) != 0):
             for j in range(len(pos_conf_above_threshold_locanet)): # for each predicted CF in img
                 xy = pos_conf_above_threshold_locanet[j]
@@ -109,7 +115,7 @@ def main():
     parser.add_argument('--input_channel', type=int, default=1, help='image type RGB or GRAY')
 
     args = parser.parse_args()
-    inference(args.testfile, args.weights, args.imgzs, args.stride, args.input_channel)
+    inference(args.testfile, args.weights, args.imgsz, args.stride, args.input_channel)
 
 if __name__ == "__main__":
     main()
