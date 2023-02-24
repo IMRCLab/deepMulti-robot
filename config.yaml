@@ -10,3 +10,4 @@ TRAIN_WARMUP_EPOCHS: 2
 TRAIN_EPOCHS: 10
 OUTPUT_FILE: 'synth-3k'
 WEIGHT_PATH: '/home/whoenig/imrc/cv-mrs/models/'
+INITIAL_WEIGHTS: ""

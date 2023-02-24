@@ -5,6 +5,7 @@ import tensorflow as tf
 from dataset import Dataset
 from locaNet import locaNet, compute_loss
 from time import perf_counter, sleep
+from pathlib import Path
 import yaml
 
 def train(cfg_yaml):
@@ -28,9 +29,9 @@ def train(cfg_yaml):
     conv_tensors = locaNet(input_tensor)
     model = tf.keras.Model(input_tensor, conv_tensors)
 
-    if os.listdir(cfg['WEIGHT_PATH']):
-        model.load_weights(cfg['WEIGHT_PATH'] + cfg['OUTPUT_FILE'])
-        print('Refining the Model')
+    if Path(cfg['INITIAL_WEIGHTS'] + ".index").exists():
+        model.load_weights(cfg['INITIAL_WEIGHTS'])
+        print('Starting from an existing model')
 
     optimizer = tf.keras.optimizers.Adam()
     def train_step(image_data, target):
