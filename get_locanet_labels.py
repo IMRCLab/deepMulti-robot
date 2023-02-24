@@ -5,17 +5,9 @@ import itertools
 import os
 import shutil
 # python3 get_locanet_labels.py ptha-to-yaml-file
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f','--file', type=str, help='dataset.yaml file')
-    parser.add_argument('-mode',help='training or test')
-    args = parser.parse_args()
-    data = args.file  
-    mode = args.mode
 
-    main_folder =  Path(args.file).parent # with filtered.yaml
-
-    locanet_folder = main_folder / "locanet"
+def get_labels(file, output_folder, mode):
+    locanet_folder = Path(output_folder) / "locanet"
     shutil.rmtree(locanet_folder, ignore_errors=True)
     os.mkdir(locanet_folder) # Create a folder for saving images
 
@@ -25,24 +17,15 @@ def main():
         file_name = locanet_folder / 'test.txt' 
 
     fileTmp = open(file_name, 'a')
-    yaml_file = args.file
+    yaml_file = file
     with open(yaml_file, 'r') as stream:
         synchronized_data = yaml.safe_load(stream)
 
     filename_to_dataset_key = dict()
     for image_name, entry in synchronized_data['images'].items():
-
-        new_image_name = str(Path(image_name).name)
-        if new_image_name in filename_to_dataset_key:
-            # already there -> resolve duplicates
-            i = 0
-            while True:
-                new_image_name = str(Path(image_name).stem) + "_" + str(i) + str(Path(image_name).suffix)
-                if new_image_name not in filename_to_dataset_key:
-                    break
-        filename_to_dataset_key[new_image_name] = image_name
         neighbors = entry['visible_neighbors']
-        dataLine = str(Path(args.file).parent / image_name)
+        dataLine = str((Path(file).parent / image_name).absolute())
+        filename_to_dataset_key[dataLine] = image_name
         for neighbor in neighbors:
             cx, cy = neighbor['pix']
             x, y, z = neighbor['pos']
@@ -54,7 +37,16 @@ def main():
 
     with open(locanet_folder / "filename_to_dataset_mapping.yaml", "w") as f:
         yaml.dump(filename_to_dataset_key, f)
-        
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f','--file', type=str, help='dataset.yaml file')
+    parser.add_argument('-mode',help='training or test')
+    args = parser.parse_args()
+
+    main_folder =  Path(args.file).parent.parent
+
+    get_labels(args.file, main_folder, args.mode)
+
 if __name__ == "__main__":
     main()
-

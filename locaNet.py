@@ -2,10 +2,10 @@ import tensorflow as tf
 # import deepMulti_robot.common as common
 # import deepMulti_robot.config as cfg
 import common as common
-import config as cfg
 
 def locaNet(input_layer):
-    input_data = common.convolutional(input_layer, (3, 3, cfg.INPUT_CHANNEL, 8))    # 224x320x8
+    INPUT_CHANNEL=1
+    input_data = common.convolutional(input_layer, (3, 3, INPUT_CHANNEL, 8))    # 224x320x8
     input_data = common.convolutional(input_data, (3, 3, 8, 16), downsample=True)   # 112x160x16
     input_data = common.convolutional(input_data, (3, 3, 16, 32), downsample=True)  # 56x80x32
     input_data = common.convolutional(input_data, (3, 3, 32, 64), downsample=True)  # 28x40x64

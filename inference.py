@@ -1,30 +1,38 @@
 import numpy as np
 import tensorflow as tf
 from time import perf_counter
-import config as cfg
 from locaNet import  locaNet
 from dataset_inference import Dataset_Test
-from utils import *
 import yaml
 import shutil
 import os
 import cv2, argparse
+import math
 from pathlib import Path
 # python3 inference.py PATH-TO-TEST-TXT --weights PATH-TO-WEIGHTS
-def testing_locanet():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("testfile")
-    parser.add_argument('--weights', type=str, default='/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/synth-5k', help='weights path(s)')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=(320,320), help='image size h,w')
-    parser.add_argument('--stride', type=int, default=8, help='stride for depth,conf maps')
-    parser.add_argument('--input_channel', type=int, default=1, help='image type RGB or GRAY')
 
-    args = parser.parse_args()
-    test_txt = args.testfile
-    locanet_weights = args.weights
-    input_size = args.imgsz
-    input_channel = args.input_channel
-    stride = args.stride
+def distance(a, b):
+    return math.sqrt(pow((a[0]-b[0]), 2) + pow((a[1]-b[1]), 2))
+
+def clean_array2d(array, threshold):
+    i = 0
+    while(i<len(array)):
+        j = i+1
+        while(j<len(array)):
+            dist = distance(array[i], array[j])
+            if dist < threshold:
+                array.pop(j)
+            else:
+                j = j+1
+        i = i+1
+    return array
+
+
+def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
+
+    test_txt = testfile
+    locanet_weights = weights
+    input_size = imgsz
 
     locanet_folder = Path(test_txt).parent
     prediction_folder = locanet_folder / "prediction"
@@ -47,8 +55,7 @@ def testing_locanet():
     for image_path, image_data, _ in testset:
         image_path = Path(image_path)
         image_name = str(image_path.name)
-        # key = str(Path(image_path.parent.name) / image_name)
-        key = image_name
+        key = str(image_path)
         pred_neighbors, per_image = [], {}
         # predict with locanet
         pred_result_locanet = model_locanet(image_data, training=False)
@@ -93,6 +100,16 @@ def testing_locanet():
     with open(locanet_folder/"inference_locanet.yaml", 'w') as outfile:
         yaml.dump(predictions, outfile)
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("testfile")
+    parser.add_argument('--weights', type=str, default='/home/akmaral/tubCloud/Shared/cvmrs/trained-models/locanet/synth-5k', help='weights path(s)')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=(320,320), help='image size h,w')
+    parser.add_argument('--stride', type=int, default=8, help='stride for depth,conf maps')
+    parser.add_argument('--input_channel', type=int, default=1, help='image type RGB or GRAY')
+
+    args = parser.parse_args()
+    inference(args.testfile, args.weights, args.imgzs, args.stride, args.input_channel)
 
 if __name__ == "__main__":
-    testing_locanet()
+    main()
