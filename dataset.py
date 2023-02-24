@@ -89,7 +89,7 @@ class Dataset(object):
             deta = 0.01
             smooth_onehot = onehot * (1 - deta) + deta * uniform_distribution
 
-            xind, yind = point_xy // self.stride
+            xind, yind = (point_xy - 1) // self.stride
             label[xind, yind, 0:2] = point_xy
             label[xind, yind, 2] = point_depth
             label[xind, yind, 3] = 1.0
