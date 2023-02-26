@@ -50,11 +50,11 @@ def inference(testfile, weights, imgsz=(320,320), stride=8, input_channel=1):
     predictions, images = {},{}
     # read mapping
     with open(locanet_folder / "filename_to_dataset_mapping.yaml", 'r') as stream:
-        filename_to_dataset_key = yaml.safe_load(stream)
+        filename_to_dataset_key = yaml.load(stream, Loader=yaml.CSafeLoader)
     
     # read original data
     with open(Path(locanet_folder) / "dataset.yaml", 'r') as stream:
-        filtered_dataset = yaml.safe_load(stream)
+        filtered_dataset = yaml.load(stream, Loader=yaml.CSafeLoader)
 
     for image_path, image_data, _ in testset:
         image_path = Path(image_path)

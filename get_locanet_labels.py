@@ -19,7 +19,7 @@ def get_labels(file, output_folder, mode):
     fileTmp = open(file_name, 'a')
     yaml_file = file
     with open(yaml_file, 'r') as stream:
-        synchronized_data = yaml.safe_load(stream)
+        synchronized_data = yaml.load(stream, Loader=yaml.CSafeLoader)
 
     filename_to_dataset_key = dict()
     for image_name, entry in synchronized_data['images'].items():

@@ -11,7 +11,7 @@ import yaml
 def train(cfg_yaml):
 
     with open(cfg_yaml) as f:
-        cfg = yaml.safe_load(f)
+        cfg = yaml.load(f, Loader=yaml.CSafeLoader)
 
     # logdir = "./output/log"
     logdir = cfg['WEIGHT_PATH'] + "log"
